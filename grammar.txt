@@ -1,35 +1,35 @@
-# Bez operandu
+1. # Bez operandu
 CREATEFRAME
 PUSHFRAME
 POPFRAME
 RETURN
 BREAK
 
-# 1 operand <var>
+2. # 1 operand <var>
 DEFVAR <var>
 POPS <var>
 
-# 1 operand <symb>
+3. # 1 operand <symb>
 PUSHS <symb>
 WRITE <symb>
 EXIT <symb>
 DPRINT <symb>
 
-# 1 operand <label>
+4. # 1 operand <label>
 CALL <label>
 LABEL <label>
 JUMP <label>
 
-# 2 operandy <var> <symb>
+5. # 2 operandy <var> <symb>
 MOVE <var> <symb>
 INT2CHAR <var> <symb>
 STRLEN <var> <symb>
 TYPE <var> <symb>
 
-# 2 operandy <var> <type>
+6. # 2 operandy <var> <type>
 READ <var> <type>
 
-# 3 operandy <var> <symb1> <symb2>
+7. # 3 operandy <var> <symb1> <symb2>
 ADD <var> <symb1> <symb2>
 SUB <var> <symb1> <symb2>
 MUL <var> <symb1> <symb2>
@@ -45,6 +45,6 @@ CONCAT <var> <symb1> <symb2>
 GETCHAR <var> <symb1> <symb2>
 SETCHAR <var> <symb1> <symb2>
 
-# 3 operandy <label> <symb1> <symb2>
+8. # 3 operandy <label> <symb1> <symb2>
 JUMPIFEQ <label> <symb1> <symb2>
 JUMPIFNEQ <label> <symb1> <symb2>

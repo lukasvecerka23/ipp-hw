@@ -1,38 +1,154 @@
 <?php
 ini_set('display_errors', 'stderr');
 // TODO:
-// - Parser header
 // - Grammar driven syntax parsing
 // - Implement each grammar rule 
+
+function exit_error($err_code, $msg){
+    fwrite(STDERR, "ERROR: ".$msg."\n");
+    exit($err_code);
+}
+
+function xml_write_program($xmlwriter){
+    $xmlwriter->startElement('program');
+    $xmlwriter->writeAttribute('language', 'IPPcode23');
+}
+
+function xml_write_operation($xmlwriter, $tokens, $opcnt){
+    $xmlwriter->startElement('instruction');
+    $xmlwriter->writeAttribute('order', $opcnt);
+    $xmlwriter->writeAttribute('opcode', $tokens[0]);
+}
+
+function xml_write_operand($xmlwriter, $operand, $type, $arg){
+    $xmlwriter->startElement('arg'.$arg);
+    $xmlwriter->writeAttribute('type', $type);
+    $xmlwriter->text($operand);
+    $xmlwriter->endElement();
+}
+
+// operation without operands
+function nooperands_operation($xmlwriter, $tokens, $opcnt){
+    if (count($tokens) != 1){
+        print_error(23, "Wrong operand count");
+    }
+    xml_write_operation($xmlwriter, $tokens, $opcnt);
+}
+
+function var_operation($xmlwriter, $tokens, $opcnt){
+    if (count($tokens) != 2){
+        print_error(23, "Wrong operand count");
+    }
+    xml_write_operation($xmlwriter, $tokens, $opcnt);
+    check_write_var($xmlwriter, $tokens[1], "1");
+}
+
+function symb_operation($xmlwriter, $tokens, $opcnt){
+    if (count($tokens) != 2){
+        print_error(23, "Wrong operand count");
+    }
+    xml_write_operation($xmlwriter, $tokens, $opcnt);
+    check_write_symb($xmlwriter, $tokens[1], "1");
+}
+
+function label_operation($xmlwriter, $tokens, $opcnt){
+    if (count($tokens) != 2){
+        print_error(23, "Wrong operand count");
+    }
+    xml_write_operation($xmlwriter, $tokens, $opcnt);
+    check_write_label($xmlwriter, $tokens[1], "1");
+}
+
+function var_symb_operation($xmlwriter, $tokens, $opcnt){
+    if (count($tokens) != 3){
+        print_error(23, "Wrong operand count");
+    }
+    xml_write_operation($xmlwriter, $tokens, $opcnt);
+    check_write_var($xmlwriter, $tokens[1], "1");
+    check_write_symb($xmlwriter, $tokens[2], "2");
+}
+
+function var_type_operation($xmlwriter, $tokens, $opcnt){
+    if (count($tokens) != 3){
+        print_error(23, "Wrong operand count");
+    }
+    xml_write_operation($xmlwriter, $tokens, $opcnt);
+    check_write_var($xmlwriter, $tokens[1], "1");
+    check_write_type($xmlwriter, $tokens[2], "2");
+}
+
+function var_symb1_symb2_operation($xmlwriter, $tokens, $opcnt){
+    if (count($tokens) != 4){
+        print_error(23, "Wrong operand count");
+    }
+    xml_write_operation($xmlwriter, $tokens, $opcnt);
+    check_write_var($xmlwriter, $tokens[1], "1");
+    check_write_symb($xmlwriter, $tokens[2], "2");
+    check_write_symb($xmlwriter, $tokens[3], "3");
+}
+
+function label_symb1_symb2_operation($xmlwriter, $tokens, $opcnt){
+    if (count($tokens) != 4){
+        print_error(23, "Wrong operand count");
+    }
+    xml_write_operation($xmlwriter, $tokens, $opcnt);
+    check_write_label($xmlwriter, $tokens[1], "1");
+    check_write_symb($xmlwriter, $tokens[2], "2");
+    check_write_symb($xmlwriter, $tokens[3], "3");
+}
+
+function check_write_var($xmlwriter, $var, $arg){
+    // lexical check
+    xml_write_operand($xmlwriter, $var, "var", $arg);
+}
+
+function check_write_symb($xmlwriter, $symb, $arg){
+    // lexical check
+    xml_write_operand($xmlwriter, $symb, "symb", $arg);
+}
+
+function check_write_label($xmlwriter, $label, $arg){
+    // lexical check
+    xml_write_operand($xmlwriter, $label, "label", $arg);
+}
+
+function check_write_type($xmlwriter, $type, $arg){
+    // lexical check
+    xml_write_operand($xmlwriter, $type, "type", $arg);
+}
 
 if ($argc > 1){
     if ($argv[1] == "--help" && $argc <= 2){
         echo "Help";
         exit(0);
     }
-    fwrite(STDERR, "Error in argument parsing");
-    exit(10);
+    exit_error(10, "Error in argument parsing");
 }
 
 $header = false;
+$opcnt = 1;
+
+$xmlwriter = new XMLWriter();
+$xmlwriter->openMemory();
+$xmlwriter->startDocument('1.0', 'UTF-8');
+$xmlwriter->setIndent(true);
+
 
 while ($line = fgets(STDIN)){
-    $opcnt = 0;
     // Process each line and split it to tokens
-    $line = trim($line);
     $line = preg_replace('/#.*/', '', $line); // remove comments
+    $line = trim($line);
     $tokens = preg_split('/\s+/', $line);
-    print_r($tokens);
 
     $tokens[0] = strtoupper($tokens[0]);
 
     if (!$header){
-        if($tokens[0] == ".IPPCODE23"){
-            echo "Header ok";
+        if($tokens[0] == ".IPPCODE23" && count($tokens) == 1){
+            xml_write_program($xmlwriter);
             $header = true;
             continue;
         } else {
-            fwrite(STDERR, "missing header file");
+            exit_error(21, "missing or invalid header .IPPCode23");
         }
     }
 
@@ -43,13 +159,15 @@ while ($line = fgets(STDIN)){
         case "POPFRAME":
         case "RETURN":
         case "BREAK":
-            echo "OP without operands";
+            nooperands_operation($xmlwriter, $tokens, $opcnt);
+            $opcnt++;
             break;
         
         // <var>
         case "DEFVAR":
         case "POPS":
-            echo "<var> OP";
+            var_operation($xmlwriter, $tokens, $opcnt);
+            $opcnt++;
             break;
 
         // <symb>
@@ -57,14 +175,16 @@ while ($line = fgets(STDIN)){
         case "WRITE":
         case "EXIT":
         case "DPRINT":
-            echo "<symb> OP";
+            symb_operation($xmlwriter, $tokens, $opcnt);
+            $opcnt++;
             break;
 
         // <label>
         case "CALL":
         case "LABEL":
         case "JUMP":
-            echo "<label> OP";
+            label_operation($xmlwriter, $tokens, $opcnt);
+            $opcnt++;
             break;
 
         // <var> <symb>
@@ -72,12 +192,14 @@ while ($line = fgets(STDIN)){
         case "INT2CHAR":
         case "STRLEN":
         case "TYPE":
-            echo "<var> <symb> OP";
+            var_symb_operation($xmlwriter, $tokens, $opcnt);
+            $opcnt++;
             break;
 
         // <var> <type>
         case "READ":
-            echo "<var> <type> OP";
+            var_type_operation($xmlwriter, $tokens, $opcnt);
+            $opcnt++;
             break;
 
         // <var> <symb1> <symb2>
@@ -95,18 +217,23 @@ while ($line = fgets(STDIN)){
         case "CONCAT":
         case "GETCHAR":
         case "SETCHAR":
-            echo "<var> <symb1> <symb2> OP";
+            var_symb1_symb2_operation($xmlwriter, $tokens, $opcnt);
+            $opcnt++;
             break;
 
         // <label> <symb1> <symb2>
         case "JUMPIFEQ":
         case "JUMPIFNEQ":
-            echo "<label> <symb1> <symb2> OP";
+            label_symb1_symb2_operation($xmlwriter, $tokens, $opcnt);
+            $opcnt++;
             break;
 
         default:
-            fwrite(STDERR, "invalid opcode");
-            exit(23);
+           exit_error(22, "invalid operation code");
     }
+    $xmlwriter->endElement();
 }
+$xmlwriter->endDocument();
+fwrite(STDOUT, trim($xmlwriter->outputMemory()));
+$xmlwriter->flush();
 ?>
