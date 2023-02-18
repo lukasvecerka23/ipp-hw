@@ -29,22 +29,70 @@ class Parser{
     }
 
     private function check_write_var($var, $arg){
-        // lexical check
+        if(!preg_match('/^\b(GF|TF|LF)@[_\-$&%\*!\?a-zA-Z][_\-$&%\*!\?a-zA-Z0-9]*$/', $var)){
+            exit_error(23, "lexical error, wrong variable name");
+        }
         $this->xml_write_operand($var, "var", $arg);
     }
     
     private function check_write_symb($symb, $arg){
-        // lexical check
-        $this->xml_write_operand($symb, "symb", $arg);
+        $new_symb = explode("@", $symb, 2);
+        if(count($new_symb) != 2) exit_error(23, "invalid symbol");
+        switch($new_symb[0]){
+            case "string":
+                if(!preg_match('/^[^\x00-\x20\x23\x5C]*((\\\\[0-9]{3})[^\x00-\x20\x23\x5C]*)*$/', $new_symb[1])){
+                    exit_error(23, "invalid string literal");
+                }
+                $symb = $new_symb[1];
+                $type = "string";
+                break;
+
+            case "int":
+                if(!preg_match('/^[+|\-]?([0-9]+|0[o|O][0-9]+|0[x|X][a-fA-F0-9]+)$/', $new_symb[1])){
+                    exit_error(23, "invalid int literal");
+                }
+                $symb = $new_symb[1];
+                $type = "int";
+                break;
+            case "bool":
+                if ($new_symb[1] != "true" && $new_symb[1] != "false"){
+                    exit_error(23, "invalid bool literal");
+                }
+                $symb = $new_symb[1];
+                $type = "bool";
+                break;
+            case "nil":
+                if ($new_symb[1] != "nil"){
+                    exit_error(23, "invalid nil literal");
+                }
+                $symb = $new_symb[1];
+                $type = "nil";
+                break;
+            case "GF":
+            case "TF":
+            case "LF":
+                if(!preg_match('/^[_\-$&%\*!\?a-zA-Z][_\-$&%\*!\?a-zA-Z0-9]*$/', $new_symb[1])){
+                    exit_error(23, "lexical error in <label>");
+                }
+                $type = "var";
+                break;
+            default:
+                exit_error(23, "lexical error invalid symbol");
+        }
+        $this->xml_write_operand($symb, $type, $arg);
     }
     
     private function check_write_label($label, $arg){
-        // lexical check
+        if(!preg_match('/^[_\-$&%\*!\?a-zA-Z][_\-$&%\*!\?a-zA-Z0-9]*$/', $label)){
+            exit_error(23, "lexical error in <label>");
+        }
         $this->xml_write_operand($label, "label", $arg);
     }
     
     private function check_write_type($type, $arg){
-        // lexical check
+        if(!preg_match('/^(int|bool|string)$/', $type)){
+            exit_error(23, "lexical error in <type>");
+        }
         $this->xml_write_operand($type, "type", $arg);
     }
 
@@ -69,14 +117,14 @@ class Parser{
     // operation without operands
     private function nooperands_operation($tokens){
         if (count($tokens) != 1){
-            print_error(23, "Wrong operand count");
+            exit_error(23, "Wrong operand count");
         }
         $this->xml_write_operation($tokens);
     }
     
     private function var_operation($tokens){
         if (count($tokens) != 2){
-            print_error(23, "Wrong operand count");
+            exit_error(23, "Wrong operand count");
         }
         $this->xml_write_operation($tokens);
         $this->check_write_var($tokens[1], "1");
@@ -84,7 +132,7 @@ class Parser{
     
     private function symb_operation($tokens){
         if (count($tokens) != 2){
-            print_error(23, "Wrong operand count");
+            exit_error(23, "Wrong operand count");
         }
         $this->xml_write_operation($tokens);
         $this->check_write_symb($tokens[1], "1");
@@ -92,7 +140,7 @@ class Parser{
     
     private function label_operation($tokens){
         if (count($tokens) != 2){
-            print_error(23, "Wrong operand count");
+            exit_error(23, "Wrong operand count");
         }
         $this->xml_write_operation($tokens);
         $this->check_write_label($tokens[1], "1");
@@ -100,7 +148,7 @@ class Parser{
     
     private function var_symb_operation($tokens){
         if (count($tokens) != 3){
-            print_error(23, "Wrong operand count");
+            exit_error(23, "Wrong operand count");
         }
         $this-> xml_write_operation($tokens);
         $this->check_write_var($tokens[1], "1");
@@ -109,7 +157,7 @@ class Parser{
     
     private function var_type_operation($tokens){
         if (count($tokens) != 3){
-            print_error(23, "Wrong operand count");
+            exit_error(23, "Wrong operand count");
         }
         $this->xml_write_operation($tokens);
         $this->check_write_var($tokens[1], "1");
@@ -118,7 +166,7 @@ class Parser{
     
     private function var_symb1_symb2_operation($tokens){
         if (count($tokens) != 4){
-            print_error(23, "Wrong operand count");
+            exit_error(23, "Wrong operand count");
         }
         $this->xml_write_operation($tokens);
         $this->check_write_var($tokens[1], "1");
@@ -128,7 +176,7 @@ class Parser{
     
     private function label_symb1_symb2_operation($tokens){
         if (count($tokens) != 4){
-            print_error(23, "Wrong operand count");
+            exit_error(23, "Wrong operand count");
         }
         $this->xml_write_operation($tokens);
         $this->check_write_label($tokens[1], "1");
@@ -185,6 +233,7 @@ class Parser{
             case "MOVE":
             case "INT2CHAR":
             case "STRLEN":
+            case "NOT":
             case "TYPE":
                 $this->var_symb_operation($line);
                 $this->opcnt++;
@@ -206,8 +255,7 @@ class Parser{
             case "EQ":
             case "AND":
             case "OR":
-            case "NOT":
-            case "STR2INT":
+            case "STRI2INT":
             case "CONCAT":
             case "GETCHAR":
             case "SETCHAR":
@@ -246,7 +294,9 @@ while ($line = fgets(STDIN)){
     // Process each line and split it to tokens
     $line = preg_replace('/#.*/', '', $line); // remove comments
     $line = trim($line);
+    if (strlen($line)==0) continue;
     $tokens = preg_split('/\s+/', $line);
+    
 
     $tokens[0] = strtoupper($tokens[0]);
     $parser->parse_line($tokens);
