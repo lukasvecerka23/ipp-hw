@@ -1,3 +1,7 @@
 examples/
 tests/
 .DS_Store
+jexamxml.jar
+options
+test.php
+tmp/
