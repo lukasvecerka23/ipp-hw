@@ -48,7 +48,7 @@ class Parser{
                 break;
 
             case "int":
-                if(!preg_match('/^[+|\-]?([0-9]+|0[o|O][0-9]+|0[x|X][a-fA-F0-9]+)$/', $new_symb[1])){
+                if(!preg_match('/^[+|\-]?([1-9][0-9]*|[0-7]+|0[o|O][0-7]+|0[x|X][a-fA-F0-9]+)$/', $new_symb[1])){
                     exit_error(23, "invalid int literal");
                 }
                 $symb = $new_symb[1];
