@@ -6,3 +6,6 @@ options
 test.php
 tmp/
 *.pdf
+*.zip
+*.sh
+testdir/

@@ -1,8 +1,5 @@
 <?php
 ini_set('display_errors', 'stderr');
-// TODO:
-// - Grammar driven syntax parsing
-// - Implement each grammar rule 
 
 function exit_error($err_code, $msg){
     fwrite(STDERR, "ERROR: ".$msg."\n");
