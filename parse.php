@@ -14,12 +14,12 @@ class Parser{
     public function __construct($xml){
         $this->xmlwriter = $xml;
     }
-    public function initXMLWriter(){
+    public function init_XML_Writer(){
         $this->xmlwriter->openMemory();
         $this->xmlwriter->startDocument('1.0', 'UTF-8');
         $this->xmlwriter->setIndent(true);
     }
-    public function closeXML(){
+    public function close_XML(){
         $this->xmlwriter->endDocument();
         fwrite(STDOUT, trim($this->xmlwriter->outputMemory()));
         $this->xmlwriter->flush();
@@ -111,7 +111,6 @@ class Parser{
         $this->xmlwriter->endElement();
     }
     
-    // operation without operands
     private function nooperands_operation($tokens){
         if (count($tokens) != 1){
             exit_error(23, "Wrong operand count");
@@ -277,7 +276,16 @@ class Parser{
 // MAIN BODY
 if ($argc > 1){
     if ($argv[1] == "--help" && $argc <= 2){
-        echo "Help";
+        echo "Skript nacte ze standardniho vstupu zdrojovy kod v IPPcode23, ";
+        echo "zkontroluje lexikalni a syntaktickou spravnost kodu a vypise na";
+        echo "standarndi vystup XML reprezentaci programu.\n";
+        echo "Tento script pracuje s temito parametry:\n";
+        echo "\t--help - vypise napovedu\n";
+        echo "Chybove navratove kody:\n";
+        echo "\t10 - chyba v parametrech prikazove radky\n";
+        echo "\t21 - chybna nebo chybejici hlavicka ve zdrojovem kodu zapsanem v IPPcode23\n";
+        echo "\t22 - neznamy nebo chybny operacni kod ve zdrojovem kodu zapsanem v IPPcode23\n";
+        echo "\t23 - jina lexikalni nebo syntakticka chyba zdrojoveho kodu zapsaneho v IPPcode23\n";
         exit(0);
     }
     exit_error(10, "Error in argument parsing");
@@ -285,7 +293,7 @@ if ($argc > 1){
 
 $xml = new XMLWriter();
 $parser = new Parser($xml);
-$parser->initXMLWriter();
+$parser->init_XML_Writer();
 
 while ($line = fgets(STDIN)){
     // Process each line and split it to tokens
@@ -298,7 +306,7 @@ while ($line = fgets(STDIN)){
     $tokens[0] = strtoupper($tokens[0]);
     $parser->parse_line($tokens);
 }
-$parser->closeXML();
+$parser->close_XML();
 
 exit(0);
 ?>
