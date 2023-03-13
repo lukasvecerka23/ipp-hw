@@ -276,7 +276,7 @@ class Parser{
         $this->xmlwriter->endElement();
     }
 
-    public static function getInstance(){
+    public static function get_instance(){
         if (self::$instance == null){
             self::$instance = new Parser();
         }
@@ -303,7 +303,7 @@ if ($argc > 1){
 }
 
 $xmlwriter = new XMLWriter();
-$parser = Parser::getInstance();
+$parser = Parser::get_instance();
 $parser->init_XML_Writer($xmlwriter);
 
 while ($line = fgets(STDIN)){
