@@ -6,15 +6,19 @@ function exit_error($err_code, $msg){
     exit($err_code);
 }
 
+// Parser singleton class
 class Parser{
     private $header = false;
     private $opcnt = 1;
     private $xmlwriter;
+    private static $instance = null;
 
-    public function __construct($xml){
-        $this->xmlwriter = $xml;
+    private function __construct(){
+        // Ensure to only have one instance of this class
     }
-    public function init_XML_Writer(){
+
+    public function init_XML_Writer($xml){
+        $this->xmlwriter = $xml;
         $this->xmlwriter->openMemory();
         $this->xmlwriter->startDocument('1.0', 'UTF-8');
         $this->xmlwriter->setIndent(true);
@@ -271,6 +275,13 @@ class Parser{
         }
         $this->xmlwriter->endElement();
     }
+
+    public static function getInstance(){
+        if (self::$instance == null){
+            self::$instance = new Parser();
+        }
+        return self::$instance;
+    }
 }
 
 // MAIN BODY
@@ -291,9 +302,9 @@ if ($argc > 1){
     exit_error(10, "Error in argument parsing");
 }
 
-$xml = new XMLWriter();
-$parser = new Parser($xml);
-$parser->init_XML_Writer();
+$xmlwriter = new XMLWriter();
+$parser = Parser::getInstance();
+$parser->init_XML_Writer($xmlwriter);
 
 while ($line = fgets(STDIN)){
     // Process each line and split it to tokens
