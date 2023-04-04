@@ -10,3 +10,4 @@ tmp/
 *.zip
 *.sh
 testdir/
+.idea/
