@@ -6,8 +6,6 @@ def get_symb_value(symb, context):
     if symb['type'] == 'var':
         var = symb['value'].split('@')
         var_data = get_var_value(var, context)
-        # if var_data['value'] is None:
-        #     exit_with_code(56, "Error: Variable not initialized.")
         return var_data['value'], var_data['type']
     elif symb['type'] == 'int':
         try:
@@ -81,3 +79,12 @@ def remove_escape_seq(string):
         string = re.sub(r'\\(\d{3})', lambda match: chr(int(match.group(1))), string)
     return string
 
+
+def check_arguments(args, num_of_args):
+    if len(args)-1 != num_of_args:
+        exit_with_code(32, "Error: Wrong number of arguments.")
+    arg_cnt = 1
+    for arg in range(1, num_of_args+1):
+        if f"arg{arg_cnt}" not in args.keys():
+            exit_with_code(32, "Error: Wrong argument name.")
+        arg_cnt += 1

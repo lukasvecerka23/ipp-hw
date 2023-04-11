@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
 from lib.utils import *
 import sys
-import re
 
 
 class Operation(ABC):
     @abstractmethod
     def execute(self, context):
+        pass
+
+    @abstractmethod
+    def check_args(self, data):
         pass
 
 
@@ -21,11 +24,17 @@ class Move(Operation):
         store_val_to_var(arg1, val, val_type, context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 2)
+
 
 class Createframe(Operation):
     def execute(self, context):
         context.tmp_frame = {}
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 0)
 
 
 class Pushframe(Operation):
@@ -36,6 +45,9 @@ class Pushframe(Operation):
         context.tmp_frame = None
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 0)
+
 
 class Popframe(Operation):
     def execute(self, context):
@@ -43,6 +55,9 @@ class Popframe(Operation):
             exit_with_code(55, "Error: No frame to pop.")
         context.tmp_frame = context.local_frame.pop()
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 0)
 
 
 class Defvar(Operation):
@@ -69,6 +84,9 @@ class Defvar(Operation):
             context.tmp_frame[arg[1]] = var
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 1)
+
 
 class Call(Operation):
     def execute(self, context):
@@ -78,12 +96,18 @@ class Call(Operation):
             exit_with_code(52, "Error: Label does not exist.")
         context.op_cnt = context.label_dict[label_name]
 
+    def check_args(self, data):
+        check_arguments(data, 1)
+
 
 class Return(Operation):
     def execute(self, context):
         if len(context.call_stack) == 0:
             exit_with_code(56, "Error: No function to return.")
         context.op_cnt = context.call_stack.pop() + 1
+
+    def check_args(self, data):
+        check_arguments(data, 0)
 
 
 class Pushs(Operation):
@@ -94,6 +118,9 @@ class Pushs(Operation):
         context.stack.append({'type': symb_type, 'value': symb_val})
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 1)
+
 
 class Pops(Operation):
     def execute(self, context):
@@ -103,6 +130,9 @@ class Pops(Operation):
         var = context.operation_list[context.op_cnt]['arg1']['value'].split('@')
         store_val_to_var(var, data['value'], data['type'], context)
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 1)
 
 
 class Add(Operation):
@@ -119,6 +149,9 @@ class Add(Operation):
         store_val_to_var(var, symb1_val + symb2_val, 'int', context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
 
 class Sub(Operation):
     def execute(self, context):
@@ -134,6 +167,9 @@ class Sub(Operation):
         store_val_to_var(var, symb1_val - symb2_val, 'int', context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
 
 class Mul(Operation):
     def execute(self, context):
@@ -148,6 +184,9 @@ class Mul(Operation):
             exit_with_code(53, "Error: Wrong types.")
         store_val_to_var(var, symb1_val * symb2_val, 'int', context)
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 3)
 
 
 class IDiv(Operation):
@@ -166,6 +205,9 @@ class IDiv(Operation):
         store_val_to_var(var, symb1_val // symb2_val, 'int', context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
 
 class Lt(Operation):
     def execute(self, context):
@@ -180,6 +222,9 @@ class Lt(Operation):
             exit_with_code(53, "Error: Wrong types.")
         store_val_to_var(var, symb1_val < symb2_val, 'bool', context)
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 3)
 
 
 class Gt(Operation):
@@ -196,6 +241,9 @@ class Gt(Operation):
         store_val_to_var(var, symb1_val > symb2_val, 'bool', context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
 
 class Eq(Operation):
     def execute(self, context):
@@ -210,6 +258,9 @@ class Eq(Operation):
             exit_with_code(53, "Error: Wrong types.")
         store_val_to_var(var, symb1_val == symb2_val, 'bool', context)
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 3)
 
 
 class And(Operation):
@@ -226,6 +277,9 @@ class And(Operation):
         store_val_to_var(var, symb1_val and symb2_val, 'bool', context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
 
 class Or(Operation):
     def execute(self, context):
@@ -241,6 +295,9 @@ class Or(Operation):
         store_val_to_var(var, symb1_val or symb2_val, 'bool', context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
 
 class Not(Operation):
     def execute(self, context):
@@ -253,6 +310,9 @@ class Not(Operation):
             exit_with_code(53, "Error: Wrong types.")
         store_val_to_var(var, not symb1_val, 'bool', context)
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 2)
 
 
 class Int2char(Operation):
@@ -269,6 +329,9 @@ class Int2char(Operation):
         except ValueError:
             exit_with_code(58, "Error: Wrong value.")
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 2)
 
 
 class Stri2char(Operation):
@@ -289,6 +352,9 @@ class Stri2char(Operation):
         except IndexError:
             exit_with_code(58, "Error: Wrong value.")
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 3)
 
 
 class Read(Operation):
@@ -326,6 +392,9 @@ class Read(Operation):
         store_val_to_var(var, input_val, val_type, context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 2)
+
 
 class Write(Operation):
     def execute(self, context):
@@ -345,6 +414,9 @@ class Write(Operation):
         print(string_to_print, end='')
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 1)
+
 
 class Concat(Operation):
     def execute(self, context):
@@ -360,6 +432,9 @@ class Concat(Operation):
         store_val_to_var(var, symb1_val + symb2_val, 'string', context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
 
 class Strlen(Operation):
     def execute(self, context):
@@ -374,6 +449,9 @@ class Strlen(Operation):
             exit_with_code(53, "Error: Wrong types.")
         store_val_to_var(var, len(symb1_val), 'int', context)
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 2)
 
 
 class Getchar(Operation):
@@ -394,6 +472,9 @@ class Getchar(Operation):
         except IndexError:
             exit_with_code(58, "Error: Wrong value.")
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 3)
 
 
 class Setchar(Operation):
@@ -416,6 +497,9 @@ class Setchar(Operation):
             exit_with_code(58, "Error: Wrong value.")
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
 
 class Type(Operation):
     def execute(self, context):
@@ -428,10 +512,16 @@ class Type(Operation):
             store_val_to_var(var, symb1_type, 'string', context)
         context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 2)
+
 
 class Label(Operation):
     def execute(self, context):
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 1)
 
 
 class Jump(Operation):
@@ -440,6 +530,9 @@ class Jump(Operation):
         if context.label_dict.get(label) is None:
             exit_with_code(52, "Error: Label does not exist.")
         context.op_cnt = context.label_dict[label]
+
+    def check_args(self, data):
+        check_arguments(data, 1)
 
 
 class Jumpifeq(Operation):
@@ -460,6 +553,10 @@ class Jumpifeq(Operation):
         else:
             context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
+
 
 class Jumpifneq(Operation):
     def execute(self, context):
@@ -479,6 +576,9 @@ class Jumpifneq(Operation):
         else:
             context.op_cnt += 1
 
+    def check_args(self, data):
+        check_arguments(data, 3)
+
 
 class Exit(Operation):
     def execute(self, context):
@@ -492,6 +592,9 @@ class Exit(Operation):
             exit_with_code(57, "Error: Invalid exit code.")
         sys.exit(val)
 
+    def check_args(self, data):
+        check_arguments(data, 1)
+
 
 class Dprint(Operation):
     def execute(self, context):
@@ -501,6 +604,9 @@ class Dprint(Operation):
             exit_with_code(56, "Error: Variable uninitialized.")
         print(symb1_val, file=sys.stderr)
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 1)
 
 
 class Break(Operation):
@@ -512,3 +618,6 @@ class Break(Operation):
         print("Global frame:", context.global_frame)
         print("Temporary frame:", context.temp_frame)
         context.op_cnt += 1
+
+    def check_args(self, data):
+        check_arguments(data, 0)

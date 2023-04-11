@@ -3,6 +3,7 @@ import sys
 import xml.etree.ElementTree as ET
 from lib.op_factory import OpFactory
 from lib.utils import exit_with_code
+import re
 
 
 class Interpret:
@@ -75,8 +76,20 @@ class Interpret:
             exit_with_code(31, "Error: XML file is not well-formed.")
         op_dict = {}
         for child in root:
-            op_dict[child.attrib['order']] = {"opcode": child.attrib['opcode']}
+            opcode = child.attrib.get('opcode')
+            order = child.attrib.get('order')
+            if opcode is None or order is None:
+                exit_with_code(32, "Error: XML file is not well-formed.")
+            if child.tag != 'instruction':
+                exit_with_code(32, "Error: XML file is not well-formed.")
+            if child.attrib['order'] in op_dict.keys():
+                exit_with_code(32, "Error: XML file is not well-formed.")
+            if not order.isdecimal() or int(order) <= 0:
+                exit_with_code(32, "Error: XML file is not well-formed.")
+            op_dict[child.attrib['order']] = {"opcode": opcode}
             for child2 in child:
+                if re.match(r'^arg[1-3]$', child2.tag) is None:
+                    exit_with_code(32, "Error: XML file is not well-formed.")
                 arg = {"type": child2.attrib['type'], "value": child2.text}
                 op_dict[child.attrib['order']][child2.tag] = arg
         op_dict = {key: value for key, value in sorted(op_dict.items(), key=lambda item: int(item[0]))}
@@ -89,4 +102,5 @@ class Interpret:
     def execute_operations(self):
         while self.op_cnt < len(self.operation_list):
             operation = self.op_factory.create_operation(self.operation_list[self.op_cnt]['opcode'])
+            operation.check_args(operation, self.operation_list[self.op_cnt])
             operation.execute(operation, self)
