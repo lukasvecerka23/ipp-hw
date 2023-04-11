@@ -11,3 +11,4 @@ tmp/
 *.sh
 testdir/
 .idea/
+__pycache__/
