@@ -1,9 +1,13 @@
 from lib.operations import *
 
 
-class OpFactory:
+class OperationFactory:
+    """
+    Factory for creating operations.
+    By given operation name, it returns the operation class.
+    """
     def __init__(self):
-        self.operations = {
+        self.operations: Dict[str, Operation] = {
             "MOVE": Move,
             "CREATEFRAME": Createframe,
             "PUSHFRAME": Pushframe,
@@ -41,8 +45,8 @@ class OpFactory:
             "BREAK": Break
         }
 
-    def create_operation(self, operation):
-        operation = self.operations.get(operation.upper())
+    def create_operation(self, operation: str) -> Operation:
+        operation: Operation = self.operations.get(operation.upper())
         if operation is None:
             exit_with_code(32, "Error: Unknown operation.")
         return operation
