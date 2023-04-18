@@ -6,7 +6,7 @@ options
 test.php
 tmp/
 *.pdf
-!docs/*
+!images/*
 *.zip
 *.sh
 testdir/

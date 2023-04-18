@@ -9,7 +9,16 @@ from lib.utils import exit_with_code
 import re
 
 
-class Interpret:
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class Interpret(metaclass=Singleton):
     def __init__(self):
         self.__op_factory: OperationFactory = OperationFactory()
         self.__xml_parser: XMLParser = XMLParser()
@@ -83,7 +92,7 @@ class Interpret:
             operation.execute(self)
 
 
-class XMLParser:
+class XMLParser(metaclass=Singleton):
     def parse_xml(self, source_path: str) -> List[Dict[str, Union[Dict[str, str], str]]]:
         """
         Go through the XML element tree, check if the XML file is well-formed and return the list of operations.
