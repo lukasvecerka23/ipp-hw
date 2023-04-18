@@ -103,6 +103,7 @@ class XMLParser:
             exit_with_code(11, "Error: Source file does not exist.")
         except PermissionError:
             exit_with_code(11, "Error: Source file is not readable.")
+
         op_dict: Dict = {}
         for child in root:
             opcode: str = child.attrib.get('opcode')
@@ -117,6 +118,7 @@ class XMLParser:
             if not order.isdecimal() or int(order) <= 0:
                 exit_with_code(32, "Error: XML file is not well-formed.")
             op_dict[order]: Dict[str, str] = {"opcode": opcode}
+
             for child2 in child:
                 arg_type = child2.attrib.get('type')
                 if arg_type is None:
@@ -127,5 +129,6 @@ class XMLParser:
                     exit_with_code(32, "Error: XML file is not well-formed.")
                 arg: Dict[str, str] = {"type": arg_type, "value": child2.text}
                 op_dict[order][child2.tag]: Dict[str, Dict[str, str] | str] = arg
+        # sort the dictionary by the order of the operations
         op_dict: Dict[str, Dict[str, str] | str] = {key: value for key, value in sorted(op_dict.items(), key=lambda item: int(item[0]))}
         return list(op_dict.values())
