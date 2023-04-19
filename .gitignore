@@ -1,0 +1,14 @@
+examples/
+tests/
+.DS_Store
+jexamxml.jar
+options
+test.php
+tmp/
+*.pdf
+!images/*
+*.zip
+*.sh
+testdir/
+.idea/
+__pycache__/

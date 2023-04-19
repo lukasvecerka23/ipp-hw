@@ -1,0 +1,50 @@
+1. # Bez operandu
+CREATEFRAME
+PUSHFRAME
+POPFRAME
+RETURN
+BREAK
+
+2. # 1 operand <var>
+DEFVAR <var>
+POPS <var>
+
+3. # 1 operand <symb>
+PUSHS <symb>
+WRITE <symb>
+EXIT <symb>
+DPRINT <symb>
+
+4. # 1 operand <label>
+CALL <label>
+LABEL <label>
+JUMP <label>
+
+5. # 2 operandy <var> <symb>
+MOVE <var> <symb>
+INT2CHAR <var> <symb>
+STRLEN <var> <symb>
+TYPE <var> <symb>
+
+6. # 2 operandy <var> <type>
+READ <var> <type>
+
+7. # 3 operandy <var> <symb1> <symb2>
+ADD <var> <symb1> <symb2>
+SUB <var> <symb1> <symb2>
+MUL <var> <symb1> <symb2>
+IDIV <var> <symb1> <symb2>
+LT <var> <symb1> <symb2>
+GT <var> <symb1> <symb2>
+EQ <var> <symb1> <symb2>
+AND <var> <symb1> <symb2>
+OR <var> <symb1> <symb2>
+NOT <var> <symb1> <symb2>
+STR2INT <var> <symb1> <symb2>
+CONCAT <var> <symb1> <symb2>
+GETCHAR <var> <symb1> <symb2>
+SETCHAR <var> <symb1> <symb2>
+
+8. # 3 operandy <label> <symb1> <symb2>
+JUMPIFEQ <label> <symb1> <symb2>
+JUMPIFNEQ <label> <symb1> <symb2>
