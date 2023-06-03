@@ -10,6 +10,10 @@ import re
 
 
 class Singleton(type):
+    """
+    Singleton metaclass.
+    Ref: https://refactoring.guru/design-patterns/singleton/python/example
+    """
     _instances = {}
 
     def __call__(cls, *args, **kwargs):

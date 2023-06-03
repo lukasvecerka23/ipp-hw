@@ -1,5 +1,5 @@
 archive:
-	zip  xvecer30 readme2.md interpret.py lib/* images/*
+	zip  xvecer30 readme2.md interpret.py lib/*.py images/*
 test:
 	sudo bash is_it_ok.sh xvecer30.zip testdir
 clean:
